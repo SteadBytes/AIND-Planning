@@ -11,6 +11,8 @@ from my_planning_graph import PlanningGraph
 
 from functools import lru_cache
 
+from itertools import product
+
 
 class AirCargoProblem(Problem):
     def __init__(self, cargos, planes, airports, initial: FluentState, goal: list):
@@ -61,6 +63,21 @@ class AirCargoProblem(Problem):
             """
             loads = []
             # TODO create all load ground actions from the domain Load action
+            # load action for combinations of cargo, plane and airport
+            # for each possible c,p,a:
+            for c_p_a in product(self.cargos, self.planes, self.airports):
+                c, p, a = c_p_a
+                action = Action(expr("Load(%s,%s,%s)" % (c, p, a)))
+                precond_pos = [expr("At(%s,%s)" % (c, a)),
+                               expr("At(%s,%s)" % (p, a)),
+                               expr("Cargo(%s)" % c),
+                               expr("Plane(%s)" % p),
+                               expr("Airport(%s)" % (a))]
+                effect_add = (expr("In(%s,%s)" % (c, p)))
+                effect_rem = (expr("At(%s,%s)" % (c, a)))
+
+                loads.append(Action(action, [precond_pos],
+                                    [effect_add, effect_rem]))
             return loads
 
         def unload_actions():
@@ -69,7 +86,19 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             """
             unloads = []
-            # TODO create all Unload ground actions from the domain Unload action
+            for c_p_a in product(self.cargos, self.planes, self.airports):
+                c, p, a = c_p_a
+                action = Action(expr("Unload(%s,%s,%s)" % (c, p, a)))
+                precond_pos = [expr("In(%s,%s)" % (c, p)),
+                               expr("At(%s,%s)" % (p, a)),
+                               expr("Cargo(%s)" % c),
+                               expr("Plane(%s)" % p),
+                               expr("Airport(%s)" % (a))]
+                effect_add = (expr("At(%s,%s)" % (c, a)))
+                effect_rem = (expr("In(%s,%s)" % (c, p)))
+
+                unloads.append(Action(action, [precond_pos],
+                                      [effect_add, effect_rem]))
             return unloads
 
         def fly_actions():
@@ -103,8 +132,19 @@ class AirCargoProblem(Problem):
             e.g. 'FTTTFF'
         :return: list of Action objects
         """
-        # TODO implement
         possible_actions = []
+        kb = PropKB()
+        kb.tell(decode_state(state, self.state_map).pos_sentence())
+        for action in self.actions_list:
+            is_possible = True
+            for clause in action.precond_pos:
+                if clause not in kb.clauses:
+                    is_possible = False
+            for clause in action.precond_neg:
+                if clause in kb.clauses:
+                    is_possible = False
+            if is_possible:
+                possible_actions.append(action)
         return possible_actions
 
     def result(self, state: str, action: Action):

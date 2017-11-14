@@ -15,7 +15,8 @@ class Action:
     precond_neg = [expr("Eaten(food)")]
     effect_add = [expr("Eaten(food)")]
     effect_rem = [expr("Hungry(person)")]
-    eat = Action(expr("Eat(person, food)"), [precond_pos, precond_neg], [effect_add, effect_rem])
+    eat = Action(expr("Eat(person, food)"), [precond_pos, precond_neg], 
+    [effect_add, effect_rem])
     """
 
     def __init__(self, action, precond, effect):
