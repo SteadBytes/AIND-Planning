@@ -60,7 +60,7 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             """
             loads = []
-            # TODO create all load ground actions from the domain Load action
+            # create all load ground actions from the domain Load action
             # load action for combinations of cargo, plane and airport
             # for each possible c,p,a:
             for c_p_a in product(self.cargos, self.planes, self.airports):
@@ -208,8 +208,18 @@ class AirCargoProblem(Problem):
         conditions by ignoring the preconditions required for an action to be
         executed.
         """
-        # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
+        # se Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2
+
+        # Problem definition has each goal satisfied by different actions
+        # Therefore actions required to achieve goal state == number of
+        # goals not yet met
         count = 0
+        # Map Node state to a Knowledge Base to compare to goal state
+        kb = PropKB()
+        kb.tell(decode_state(node.state, self.state_map).pos_sentence())
+        for g_clause in self.goal:
+            if g_clause not in kb.clauses:
+                count += 1
         return count
 
 
