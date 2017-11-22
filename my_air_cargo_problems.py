@@ -213,13 +213,11 @@ class AirCargoProblem(Problem):
         # Problem definition has each goal satisfied by different actions
         # Therefore actions required to achieve goal state == number of
         # goals not yet met
-        count = 0
         # Map Node state to a Knowledge Base to compare to goal state
         kb = PropKB()
         kb.tell(decode_state(node.state, self.state_map).pos_sentence())
-        for g_clause in self.goal:
-            if g_clause not in kb.clauses:
-                count += 1
+        count = len(
+            [g_clause for g_clause in self.goal if g_clause not in kb.clauses])
         return count
 
 
